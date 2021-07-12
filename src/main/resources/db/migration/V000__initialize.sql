@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(45) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(45) NOT NULL,
+    email VARCHAR(45) NOT NULL,
+    password VARCHAR(45) NOT NULL
+);
+
