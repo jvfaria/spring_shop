@@ -1,42 +1,40 @@
 package br.com.example.springshop.services;
 
+import br.com.example.springshop.config.CustomPasswordEncoder;
 import br.com.example.springshop.exceptions.EmailExistsException;
-import br.com.example.springshop.exceptions.GlobalExceptionHandler;
 import br.com.example.springshop.exceptions.ResourceNotFoundException;
 import br.com.example.springshop.models.User;
 import br.com.example.springshop.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
-public class UserService {
-    @Bean
-    public PasswordEncoder encoder() {
-        return new BCryptPasswordEncoder();
-    }
+public class UserService implements UserDetailsService {
+
+    @Autowired
+    CustomPasswordEncoder passwordEncoder;
 
     @Autowired
     UserRepository userRepository;
 
     @Autowired
-    PasswordEncoder encoder;
+    UserService userService;
+
 
     public User create(User userDTO) throws EmailExistsException {
         if(this.emailExists(userDTO.getEmail())) {
             throw new EmailExistsException("Email já cadastrado ! Informar outro email.");
         }
         User user = new User();
-        user.setName(userDTO.getName().toUpperCase(Locale.ROOT));
+        user.setUsername(userDTO.getUsername().toUpperCase(Locale.ROOT));
         user.setEmail(userDTO.getEmail());
-        user.setPassword(encoder.encode(userDTO.getPassword()));
+        user.setPassword(passwordEncoder.getEncoder().encode(userDTO.getPassword()));
 
         return userRepository.save(user);
     }
@@ -53,5 +51,23 @@ public class UserService {
     public boolean emailExists(String email) {
         User user = userRepository.findByEmail(email);
         return Objects.nonNull(user) ? true : false;
+    }
+
+    private Set<? extends SimpleGrantedAuthority> getAuthorities(User user) {
+        Set<SimpleGrantedAuthority> authorities = new HashSet<>();
+        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
+
+        return authorities;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email);
+
+        if(Objects.isNull(user)) {
+            throw new UsernameNotFoundException("User not found !");
+        }
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthorities(user));
+        return userDetails;
     }
 }

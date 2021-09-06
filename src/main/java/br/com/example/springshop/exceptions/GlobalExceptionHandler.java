@@ -38,4 +38,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity(errorDetails,HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleException(UserNotFoundException exception, HttpServletRequest req) {
+        LocalDateTime now = LocalDateTime.now();
+        ErrorDetails errorDetails = new ErrorDetails(
+                now,
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.name(),
+                req.getRequestURL().toString(),
+                exception.getMessage()
+        );
+        return new ResponseEntity(errorDetails,HttpStatus.NOT_FOUND);
+    }
 }

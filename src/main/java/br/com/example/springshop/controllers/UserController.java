@@ -30,18 +30,19 @@ public class UserController {
         try {
             List<User> users;
             if(name.isPresent()) {
-                users = userRepository.findByNameContains(name.get().toUpperCase(Locale.ROOT));
+                users = userRepository.findByUsernameContains(name.get().toUpperCase(Locale.ROOT));
                 return new ResponseEntity<>(users, HttpStatus.OK);
             }
             users = userRepository.findAll();
 
-            return !users.isEmpty() ? new ResponseEntity<>(users, HttpStatus.OK) : new ResponseEntity("No users founded",HttpStatus.NO_CONTENT);
+            return !users.isEmpty() ? new ResponseEntity<>(users, HttpStatus.OK)
+                    : new ResponseEntity("No users founded",HttpStatus.NO_CONTENT);
         } catch (Exception e) {
             throw new Exception("Error: " + e.getMessage());
         }
     }
 
-    @PostMapping
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     ResponseEntity<User> createUser(@RequestBody User user) throws EmailExistsException {
         User createdUser = userService.create(user);

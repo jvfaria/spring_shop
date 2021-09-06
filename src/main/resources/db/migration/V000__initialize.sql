@@ -49,3 +49,19 @@ CREATE TABLE IF NOT EXISTS sales_products (
         FOREIGN KEY (product_id)
             REFERENCES products(id)
 );
+
+CREATE TABLE IF NOT EXISTS roles (
+     id SERIAL PRIMARY KEY,
+     name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+      user_id UUID,
+      role_id BIGINT,
+      CONSTRAINT fk_user_id
+          FOREIGN KEY (user_id)
+              REFERENCES users(id),
+      CONSTRAINT fk_roles_id
+          FOREIGN KEY (role_id)
+              REFERENCES roles(id)
+);
